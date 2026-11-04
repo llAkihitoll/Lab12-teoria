@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Laboratorio 12 — Respuestas teóricas (Problema 1)</title>
+<style>
+  @page { size: Letter; margin: 2cm 2.2cm; }
+  body { font-family: "Cambria", "Georgia", serif; font-size: 11pt; line-height: 1.45; color: #1a1a1a; }
+  h1 { font-size: 20pt; margin: 0 0 4pt; }
+  h2 { font-size: 14pt; border-bottom: 1.5px solid #333; padding-bottom: 3pt; margin-top: 22pt; break-after: avoid; }
+  h3 { font-size: 12pt; margin-top: 16pt; break-after: avoid; }
+  .meta { color: #555; margin-bottom: 18pt; }
+  code, pre, .lc { font-family: "Consolas", "Courier New", monospace; font-size: 9.8pt; }
+  pre { background: #f4f4f4; border-left: 3px solid #888; padding: 7pt 10pt; white-space: pre-wrap; break-inside: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 8pt 0; break-inside: avoid; }
+  th, td { border: 1px solid #bbb; padding: 4pt 6pt; vertical-align: top; text-align: left; }
+  th { background: #e8e8e8; }
+  td.lc { white-space: nowrap; }
+  .nota { background: #f7f7ee; border: 1px solid #ddd9b8; padding: 6pt 10pt; break-inside: avoid; }
+  .si { color: #1f6e2c; } .no { color: #9b1c1c; }
+</style>
+</head>
+<body>
+
+<h1>Laboratorio 12 — Teoría de la Computación</h1>
+<div class="meta">
+  Respuestas teóricas del Problema 1 · Noviembre 2026<br>
+  Lenguaje de la implementación: JavaScript (Node.js) · Programa: <code>problema1/problema1.js</code>
+</div>
+
+<p>En este documento se usa la notación usual del cálculo lambda: <span class="lc">λx.M</span> es una
+función con parámetro <span class="lc">x</span> y cuerpo <span class="lc">M</span>; <span class="lc">M N</span>
+es aplicar <span class="lc">M</span> a <span class="lc">N</span>; la aplicación asocia a la izquierda
+(<span class="lc">M N P = (M N) P</span>) y el cuerpo de una lambda se extiende lo más posible a la derecha.
+La <b>reducción-β</b> es la regla de cómputo:</p>
+<pre>(λx.M) N  →β  M[x := N]      « reemplazar cada x libre de M por N »</pre>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>A. Reducción-β de la operación lógica NOT</h2>
+
+<h3>A.1 Booleanos de Church</h3>
+<p>El cálculo lambda puro no tiene valores primitivos: los booleanos se codifican como funciones que
+<i>eligen</i> entre dos alternativas. <span class="lc">TRUE</span> devuelve la primera y
+<span class="lc">FALSE</span> la segunda, por lo que un booleano se comporta como un
+<i>if-then-else</i>: <span class="lc">B M N</span> da <span class="lc">M</span> si <span class="lc">B</span>
+es verdadero y <span class="lc">N</span> si es falso.</p>
+<pre>TRUE  ≡ λx.λy.x
+FALSE ≡ λx.λy.y
+NOT   ≡ λb.b FALSE TRUE       « si b entonces FALSE si no TRUE »</pre>
+
+<h3>A.2 NOT TRUE</h3>
+<table>
+  <tr><th>#</th><th>Término</th><th>Explicación</th></tr>
+  <tr><td>0</td><td class="lc">NOT TRUE</td><td>Expresión inicial.</td></tr>
+  <tr><td>δ</td><td class="lc">(λb.b FALSE TRUE) (λx.λy.x)</td><td>Se expanden las definiciones. El término completo es un redex: una abstracción aplicada a un argumento.</td></tr>
+  <tr><td>1</td><td class="lc">→β TRUE FALSE TRUE</td><td><span class="lc">[b := TRUE]</span>: en el cuerpo <span class="lc">b FALSE TRUE</span> se reemplaza <span class="lc">b</span> por <span class="lc">TRUE</span>.</td></tr>
+  <tr><td></td><td class="lc">= (λx.λy.x) FALSE TRUE</td><td>Se expande <span class="lc">TRUE</span>. Como la aplicación asocia a la izquierda, el redex es <span class="lc">(λx.λy.x) FALSE</span>.</td></tr>
+  <tr><td>2</td><td class="lc">→β (λy.FALSE) TRUE</td><td><span class="lc">[x := FALSE]</span>: el cuerpo <span class="lc">λy.x</span> se convierte en <span class="lc">λy.FALSE</span>.</td></tr>
+  <tr><td>3</td><td class="lc">→β FALSE</td><td><span class="lc">[y := TRUE]</span>: <span class="lc">y</span> no aparece libre en <span class="lc">FALSE</span>, así que el argumento se descarta.</td></tr>
+</table>
+<p>Resultado: <span class="lc">NOT TRUE ↠β FALSE = λx.λy.y</span>, una forma normal (ya no contiene redexes) obtenida en 3 pasos β.</p>
+
+<h3>A.3 NOT FALSE</h3>
+<table>
+  <tr><th>#</th><th>Término</th><th>Explicación</th></tr>
+  <tr><td>0</td><td class="lc">NOT FALSE = (λb.b FALSE TRUE) (λx.λy.y)</td><td>Expresión inicial con definiciones expandidas.</td></tr>
+  <tr><td>1</td><td class="lc">→β FALSE FALSE TRUE</td><td><span class="lc">[b := FALSE]</span>.</td></tr>
+  <tr><td></td><td class="lc">= (λx.λy.y) FALSE TRUE</td><td>Se expande el primer <span class="lc">FALSE</span>.</td></tr>
+  <tr><td>2</td><td class="lc">→β (λy.y) TRUE</td><td><span class="lc">[x := FALSE]</span>: <span class="lc">x</span> no aparece en <span class="lc">λy.y</span>, así que el primer argumento se descarta.</td></tr>
+  <tr><td>3</td><td class="lc">→β TRUE</td><td><span class="lc">[y := TRUE]</span>: la identidad devuelve su argumento.</td></tr>
+</table>
+<p>Resultado: <span class="lc">NOT FALSE ↠β TRUE = λx.λy.x</span>. Con esto se comprueba la tabla de verdad completa de NOT.</p>
+
+<h3>A.4 Definición alternativa</h3>
+<p>Otra codificación común de NOT intercambia directamente las dos alternativas del booleano:
+<span class="lc">NOT' ≡ λp.λa.λb.p b a</span>. Su reducción muestra que los pasos β también pueden
+ocurrir dentro de una abstracción:</p>
+<pre>NOT' TRUE = (λp.λa.λb.p b a) (λx.λy.x)
+   →β λa.λb.(λx.λy.x) b a        [p := TRUE]
+   →β λa.λb.(λy.b) a              [x := b]
+   →β λa.λb.b                     [y := a]   ≡α  λx.λy.y = FALSE</pre>
+<p>El resultado <span class="lc">λa.λb.b</span> es igual a <span class="lc">FALSE</span> salvo el nombre
+de las variables ligadas (α-equivalencia). Por eso ambas definiciones de NOT son equivalentes.</p>
+
+<div class="nota"><b>Verificación.</b> El programa <code>problema1/problema1.js</code> incluye un pequeño
+reductor de cálculo lambda (orden normal, con sustitución que evita la captura de variables). Ese reductor
+<i>calcula</i> estas reducciones y las imprime paso a paso, con la sustitución de cada paso. El programa
+también reduce <span class="lc">NOT (NOT TRUE) ↠β TRUE</span> en 6 pasos. Las pruebas automatizadas
+(<code>node --test</code>) confirman los resultados.</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>B. Recursión y ciclos</h2>
+
+<h3>B.1 Recursión</h3>
+<p>En la programación funcional, la recursión es el mecanismo básico de repetición: una función se define
+en términos de sí misma, con un <b>caso base</b> que detiene el proceso y un <b>caso recursivo</b> que se
+acerca al caso base. En JavaScript esto se escribe directamente porque la lambda tiene un nombre al que
+puede referirse:</p>
+<pre>const factorial = n => n === 0 ? 1 : n * factorial(n - 1);   // factorial(5) = 120</pre>
+
+<p><b>El problema en cálculo lambda.</b> Las funciones lambda son <i>anónimas</i>, así que una función no
+puede referirse a sí misma por nombre. La solución es un <b>combinador de punto fijo</b>. El más conocido
+es el combinador Y de Curry:</p>
+<pre>Y ≡ λf.(λx.f (x x)) (λx.f (x x))</pre>
+<p>Su propiedad fundamental se obtiene por reducción-β:</p>
+<pre>Y g = (λf.(λx.f (x x)) (λx.f (x x))) g
+   →β (λx.g (x x)) (λx.g (x x))              [f := g]
+   →β g ((λx.g (x x)) (λx.g (x x)))          [x := λx.g (x x)]
+    =β g (Y g)</pre>
+<p>Es decir, <span class="lc">Y g</span> es un punto fijo de <span class="lc">g</span>:
+<span class="lc">Y g =β g (Y g) =β g (g (Y g)) =β …</span>. Si <span class="lc">g</span> recibe como
+primer parámetro "la función que se llama a sí misma", <span class="lc">Y</span> se encarga de pasársela.
+El factorial queda así:</p>
+<pre>FACT ≡ Y (λf.λn. ISZERO n 1 (MULT n (f (PRED n))))
+
+FACT 2 =β (λn. ISZERO n 1 (MULT n (FACT (PRED n)))) 2
+       =β MULT 2 (FACT 1)
+       =β MULT 2 (MULT 1 (FACT 0))
+       =β MULT 2 (MULT 1 1)  =β  2</pre>
+<p>Aquí <span class="lc">ISZERO</span> devuelve un booleano de Church, que actúa como <i>if</i>. Esa
+elección es justamente la que detiene la recursión en el caso base.</p>
+
+<p><b>Recursión en un lenguaje estricto.</b> JavaScript evalúa los argumentos antes de llamar a una
+función (evaluación estricta). Por eso <span class="lc">Y</span> escrito tal cual intenta evaluar
+<span class="lc">x(x)</span> infinitamente y produce <code>RangeError: Maximum call stack size
+exceeded</code>. La versión para lenguajes estrictos es el <b>combinador Z</b>, que envuelve la
+autoaplicación en una lambda (η-expansión) para retrasarla hasta que se necesita:</p>
+<pre>const Z = f => (x => f(v => x(x)(v)))(x => f(v => x(x)(v)));
+const factorialZ = Z(self => n => n === 0 ? 1 : n * self(n - 1));   // factorialZ(5) = 120</pre>
+
+<h3>B.2 Ciclos</h3>
+<p>En el paradigma funcional no hay variables que cambien de valor. Por eso un ciclo
+<code>for</code>/<code>while</code> "clásico", que depende de un contador mutable, no tiene un equivalente
+directo. Las iteraciones se expresan de tres formas:</p>
+<ol>
+  <li><b>Recursión de cola con acumulador.</b> El estado del ciclo (contador y resultado parcial) viaja en
+      los parámetros. La llamada recursiva es lo último que se ejecuta, así que no queda trabajo pendiente
+      y el compilador puede convertirla en un salto, igual que un ciclo.
+<pre>// imperativo                           // funcional (recursión de cola)
+let total = 0;                           const suma = (n, acc = 0) =>
+for (let i = 1; i <= n; i++)               n === 0 ? acc : suma(n - 1, acc + n);
+  total += i;</pre></li>
+  <li><b>Funciones de orden superior.</b> Los patrones de ciclo más comunes ya existen como funciones que
+      reciben una lambda: <code>map</code> (transformar cada elemento), <code>filter</code> (seleccionar) y
+      <code>reduce</code> (acumular). El índice y la mutación quedan ocultos:
+<pre>const rango = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+rango(1, 10).reduce((acc, x) => acc + x, 0);     // 55</pre></li>
+  <li><b>Numerales de Church (cálculo lambda).</b> El número <i>n</i> se representa como "aplicar
+      <span class="lc">f</span> <i>n</i> veces": <span class="lc">n ≡ λf.λx.f (f (… (f x)))</span>. Así,
+      un número <i>es</i> un ciclo acotado. Por ejemplo, <span class="lc">3 f x = f (f (f x))</span>, y en
+      JavaScript <code>tres(s =&gt; s + "*")("")</code> da <code>"***"</code>.</li>
+</ol>
+<table>
+  <tr><th>Forma</th><th>Estado</th><th>Ventaja</th><th>Limitación</th></tr>
+  <tr><td>Ciclo <code>for</code> imperativo</td><td>Variables mutables</td><td>Eficiente y directo</td><td>Efectos secundarios; más difícil de razonar</td></tr>
+  <tr><td>Recursión (de cola)</td><td>Parámetros</td><td>Sin mutación; se demuestra por inducción</td><td>En lenguajes sin optimización de llamadas de cola desborda la pila</td></tr>
+  <tr><td><code>map</code>/<code>filter</code>/<code>reduce</code></td><td>Oculto en la función</td><td>Declarativo y fácil de componer</td><td>Puede crear listas intermedias</td></tr>
+  <tr><td>Numerales de Church</td><td>Ninguno</td><td>Base teórica: los ciclos son funciones</td><td>Solo es práctico como modelo teórico</td></tr>
+</table>
+<p><b>Diferencia clave:</b> la recursión general (con <span class="lc">Y</span>) puede no terminar. Por
+ejemplo, <span class="lc">Y g</span> no tiene forma normal. Un ciclo con numeral de Church o con
+<code>reduce</code> sobre una lista finita siempre termina, porque el número de vueltas está fijado de
+antemano.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>C. ¿Cuándo es prudente usar programación funcional y cuándo no?</h2>
+
+<h3 class="si">Cuándo sí conviene</h3>
+<ul>
+  <li><b>Transformación de datos.</b> Procesos que reciben datos y producen otros datos (reportes, ETL,
+      APIs que transforman JSON) se expresan bien como una cadena de <code>map</code>/<code>filter</code>/<code>reduce</code>.</li>
+  <li><b>Concurrencia y paralelismo.</b> Si los datos son inmutables, varios hilos no pueden pisarse entre
+      sí, así que desaparecen las condiciones de carrera. Por eso Erlang/Elixir se usan en telecomunicaciones,
+      y modelos como MapReduce/Spark se basan en funciones puras.</li>
+  <li><b>Código que debe ser confiable y fácil de probar.</b> Una función pura siempre devuelve lo mismo
+      para la misma entrada, así que se prueba sin preparar ningún estado. También se razona con
+      sustitución y con inducción, igual que la reducción-β.</li>
+  <li><b>Compiladores, intérpretes y analizadores.</b> Recorren estructuras recursivas (árboles), que se
+      procesan naturalmente con funciones recursivas. Un ejemplo es el reductor de cálculo lambda de este
+      laboratorio.</li>
+</ul>
+<p><b>Ejemplo:</b> calcular el total de ventas por categoría a partir de una lista de transacciones. No
+hay variables compartidas, cada paso se puede probar por separado y el mismo código funciona si los datos
+se reparten entre varios procesos.</p>
+<pre>const totalPorCategoria = (ventas) => ventas
+  .filter(v => v.estado === 'pagada')
+  .reduce((acc, v) => ({ ...acc, [v.categoria]: (acc[v.categoria] ?? 0) + v.monto }), {});</pre>
+
+<h3 class="no">Cuándo no conviene</h3>
+<ul>
+  <li><b>Sistemas dominados por estado mutable y rendimiento en tiempo real</b>, como motores de
+      videojuegos, simulaciones físicas o sistemas embebidos con poca memoria. Copiar estructuras
+      inmutables en cada cambio aumenta el uso de memoria y el trabajo del recolector de basura.</li>
+  <li><b>Algoritmos que son naturalmente <i>in-place</i></b>, como quicksort sobre un arreglo, union-find
+      o la programación dinámica sobre tablas grandes. La versión imperativa es más simple y más rápida.</li>
+  <li><b>Recursión profunda en lenguajes sin optimización de llamadas de cola</b>, como JavaScript/Node
+      (V8) o Python. Una "iteración" recursiva de cien mil vueltas desborda la pila.</li>
+  <li><b>Programas centrados en entrada/salida</b> (scripts de sistema, drivers) o equipos sin
+      experiencia en el paradigma, donde el código funcional puede quedar menos claro que el equivalente
+      imperativo.</li>
+</ul>
+<p><b>Ejemplo:</b> sumar los números del 1 al 100 000 con recursión de cola en Node.js. La versión
+funcional falla, aunque la idea es correcta, mientras que el ciclo imperativo termina sin problema. Esto se
+comprobó ejecutando el código de <code>problema1.js</code>:</p>
+<pre>sumaRecursiva(100000)    // RangeError: Maximum call stack size exceeded
+sumaImperativa(100000)   // 5000050000</pre>
+<p>Otro ejemplo es actualizar la posición de 10 000 partículas 60 veces por segundo. Crear un arreglo
+nuevo en cada fotograma desperdicia memoria. Modificar el arreglo existente (estilo imperativo) es la
+opción adecuada.</p>
+
+<p><b>Conclusión:</b> la programación funcional es prudente cuando importan la corrección, la
+composición de transformaciones y la concurrencia segura. Es menos adecuada cuando el problema es, por
+naturaleza, de estado mutable, de rendimiento extremo o de recursión muy profunda en un lenguaje que no la
+optimiza. En la práctica, muchos lenguajes (JavaScript, Java, Rust, Kotlin) permiten combinar ambos
+estilos y elegir el más claro en cada caso.</p>
+
+</body>
+</html>

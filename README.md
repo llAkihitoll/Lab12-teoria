@@ -4,7 +4,8 @@ Programación funcional y funciones lambda: reducción-β de NOT en cálculo lam
 
 ## Video de demostración (Problema 1)
 
-▶️ **[ENLACE PENDIENTE — pegar aquí el enlace del video no listado de YouTube]**
+https://youtu.be/wAxH3vjO8PU
+
 
 ## Lenguaje y requisitos
 

@@ -6,7 +6,7 @@
  *
  * Ejecución:
  *   node problema4/eliminar.js                                  → ejemplos (incluye el del PDF)
- *   node problema4/eliminar.js '["a","b","c"]' '["b","x"]'      → listas indicadas (JSON)
+ *   node problema4/eliminar.js "rojo,verde,azul" "verde,cafe"   → listas indicadas (separadas por comas)
  */
 
 /**
@@ -45,14 +45,9 @@ const COLORES = ['rojo', 'verde', 'azul', 'amarillo', 'gris', 'blanco', 'negro']
 
 function main() {
   if (process.argv[2] !== undefined) {
-    try {
-      const lista = JSON.parse(process.argv[2]);
-      const aBorrar = JSON.parse(process.argv[3] ?? '[]');
-      mostrar('Listas indicadas', lista, aBorrar);
-    } catch (error) {
-      console.log(`Error: ${error instanceof SyntaxError ? 'las listas deben escribirse en formato JSON' : error.message}`);
-      process.exitCode = 1;
-    }
+    // Elementos separados por comas: "rojo,verde,azul" → ['rojo', 'verde', 'azul']
+    const separar = (texto = '') => texto.split(',').map((x) => x.trim()).filter((x) => x !== '');
+    mostrar('Listas indicadas', separar(process.argv[2]), separar(process.argv[3]));
     return;
   }
 
